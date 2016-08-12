@@ -233,11 +233,15 @@ static NSString *const PFQueryCollectionViewNextPageReusableViewIdentifier = @"n
 
 - (BFTask<NSArray<__kindof PFObject *> *> *)loadObjects:(NSInteger)page clear:(BOOL)clear {
     self.loading = YES;
+    
+    if (clear)
+    {
+        [self clear];
+    }
     [self objectsWillLoad];
-
     PFQuery *query = [self queryForCollection];
     [self _alterQuery:query forLoadingPage:page];
-
+    
     BFTaskCompletionSource<NSArray<__kindof PFObject *> *> *source = [BFTaskCompletionSource taskCompletionSource];
     [query findObjectsInBackgroundWithBlock:^(NSArray *foundObjects, NSError *error) {
         if (![Parse isLocalDatastoreEnabled] &&
@@ -246,27 +250,41 @@ static NSString *const PFQueryCollectionViewNextPageReusableViewIdentifier = @"n
             // no-op on cache miss
             return;
         }
-
+        
         self.loading = NO;
-
+        
         if (error) {
             _lastLoadCount = -1;
             _currentNextPageView.animating = NO;
         } else {
             _currentPage = page;
             _lastLoadCount = [foundObjects count];
-
+            
             if (clear) {
                 [_mutableObjects removeAllObjects];
             }
-
+            
+            int now = _mutableObjects.count;
+            int will = now + foundObjects.count;
             [_mutableObjects addObjectsFromArray:foundObjects];
-            [self.collectionView reloadData];
+            if (!clear)
+            {
+                NSMutableArray *indexpaths = [NSMutableArray new];
+                for (int i = now;i<will;i++)
+                {
+                    [indexpaths addObject:[NSIndexPath indexPathForRow:i inSection:0]];
+                }
+                [self.collectionView insertItemsAtIndexPaths:indexpaths];
+            }
+            else
+            {
+                [self.collectionView reloadData];
+            }
         }
-
+        
         [self objectsDidLoad:error];
         [self.refreshControl endRefreshing];
-
+        
         if (error) {
             [source trySetError:error];
         } else {
