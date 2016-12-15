@@ -267,19 +267,20 @@ static NSString *const PFQueryCollectionViewNextPageReusableViewIdentifier = @"n
             int now = _mutableObjects.count;
             int will = now + foundObjects.count;
             [_mutableObjects addObjectsFromArray:foundObjects];
-            if (!clear)
-            {
-                NSMutableArray *indexpaths = [NSMutableArray new];
-                for (int i = now;i<will;i++)
-                {
-                    [indexpaths addObject:[NSIndexPath indexPathForRow:i inSection:0]];
-                }
-                [self.collectionView insertItemsAtIndexPaths:indexpaths];
-            }
-            else
-            {
-                [self.collectionView reloadData];
-            }
+//            if (!clear)
+//            {
+//                NSMutableArray *indexpaths = [NSMutableArray new];
+//                for (int i = now;i<will;i++)
+//                {
+//                    [indexpaths addObject:[NSIndexPath indexPathForRow:i inSection:0]];
+//                }
+//                [self.collectionView insertItemsAtIndexPaths:indexpaths];
+//            }
+//            else
+//            {
+//                [self.collectionView reloadData];
+//            }
+            [self.collectionView reloadData];
         }
         
         [self objectsDidLoad:error];
